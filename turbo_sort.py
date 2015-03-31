@@ -22,14 +22,14 @@ import re
 import shutil
 import string
 
-# Edit these variables to your liking, make sure to use \\ for backslash or / for forward slash 
-undated_fs = "%t\\Season %s\\%t S%0s E%0e"
-dated_fs   = "%t\\%t %sm %0d %y"
+# Edit these variables to your liking, make sure to use / for backslash or / for forward slash
+undated_fs = "%t/Season %s/%t - %sx%e"
+dated_fs   = "%t/%t %sm %0d %y"
 movie_fs   = "%t (%y)"
 
-tvdest     = "D:\\Videos\\TV"
-moviedest  = "D:\\Videos\\Movies"
-sourcedir  = "D:\\Downloads\\Usenet" 
+tvdest     = "/home/user/tvshows"
+moviedest  = "/home/user/films"
+sourcedir  = "/home/user/downloads"
 extensions = ["mkv", "avi", "mp4", "ts"]
 SATELLITES = ["srt", "srr"]
 min_size   = 100   # in MB / Megabytes (Default: 100MB)
@@ -41,11 +41,11 @@ truncate   = True  # Truncate the output to 80 characters?    (Default: True)
 satellites = True  # Move related files such as subtitles?    (Default: True)
 cleanup    = True  # Cleanup after moving files?              (Default: True)
 clean_mode = 2     # Cleanup mode 1 or 2.                     (Default: 1)
-                   # 1 is "safe cleanup" 2 removes the whole directory after something is moved. 
+                   # 1 is "safe cleanup" 2 removes the whole directory after something is moved.
 notify     = False # Show popup notifications instead of CLI? (Default: False)
 stay_open  = False # Keep window open after execution?        (Default: False)
 no_rename  = False # Prevent file operations for testing?     (Default: False)
-remove_src = True  # Allow sourcedir to be removed during cleanup? (Default: False)
+remove_src = False  # Allow sourcedir to be removed during cleanup? (Default: False)
 
 # Don't change anything below unless you know what you're doing!
 if notify:
@@ -63,9 +63,9 @@ quality_attributes = ["1080p", "720p", "480p", "xvid", "1080i", "1080"]
 ignore_attributes = ["hdtv", "dts"]
 consolesize = 80
 
-#tvdest     = "D:\\Documents\\Scripts\\Script test files\\tvdest"
-#moviedest  = "D:\\Documents\\Scripts\\Script test files\\moviedest"
-#sourcedir  = "D:\\Documents\\Scripts\\Script test files\\sourcedir"
+#tvdest     = "D:/Documents/Scripts/Script test files/tvdest"
+#moviedest  = "D:/Documents/Scripts/Script test files/moviedest"
+#sourcedir  = "D:/Documents/Scripts/Script test files/sourcedir"
 
 def cleanup(base, dest):
     """ Moves satellite files such as subtitles that are associated with base
@@ -73,7 +73,7 @@ def cleanup(base, dest):
         in SATELLITES will be deleted.
         base/dest: file paths
     """
-    root = os.path.dirname(base) 
+    root = os.path.dirname(base)
     base = os.path.basename(base[:base.rfind('.')]).lower()
     for f in os.listdir(root):
         if f.lower().startswith(base):
@@ -109,7 +109,7 @@ def cleanup_brute():
         except Exception as e:
             show("Failed to delete:", dir)
             print(e)
-            
+
 def cleanup_safe():
     """ Use the "safe cleanup" approach to remove newly emptied directories
         Removes only files that have the same prefix as moved files
@@ -122,23 +122,23 @@ def cleanup_safe():
             except Exception as e:
                 show("Failed to delete:", dir)
                 print(e)
-                    
+
 def finalize_fields():
     """ Perform a few functions so the formatter gets the right input """
     global special, title
     title = titler(title)
     special = titler(special)
-    
+
 def format_dated_show():
     """ Replaces dated show format string with available fields """
     index = 0
     final = ""
     for i in range(len(dateidx)):
-        final  += dated_fs[index:dateidx[i]] # Append literal part between % signs 
+        final  += dated_fs[index:dateidx[i]] # Append literal part between % signs
         index   = dateidx[i]+1     # Index of format string variable
         fstemp  = dated_fs[index:] # Substring of fs starting right after a %, e.g. "t E%0e S%0s" from "%t E0e S%0s"
         index  += 1                # Move current position past first character of fstemp
-        
+
         if fstemp[0] == '0':       # Month/day with leading 0
             if   fstemp[1] == 'm': final += zmonth
             elif fstemp[1] == 'd': final += zday
@@ -169,34 +169,34 @@ def format_show():
     index = 0
     final = ""
     for i in range(len(tvidx)):
-        final  += undated_fs[index:tvidx[i]]        
+        final  += undated_fs[index:tvidx[i]]
         index   = tvidx[i]+1
         fstemp  = undated_fs[index:]
         index  += 1
-        
+
         if fstemp[0] == '0':     # Season/episode with leading 0
             if   fstemp[1] == 'e': final += zepisode
             elif fstemp[1] == 's': final += zseason
             index += 1
-        elif fstemp[0] == 'e': final += episode  
+        elif fstemp[0] == 'e': final += episode
         elif fstemp[0] == 's': final += season
         elif fstemp[0] == 't': final += title
         elif fstemp[0] == 'T': final += title.upper()
         elif fstemp[0] == 'o': final += old_filename[:old_filename.rfind('.')]
     final += undated_fs[index:]
     return final
-  
+
 def format_movie():
     """ Replaces movie format string with available fields """
     index = 0
     final = ""
-    
+
     # If the fs expects an element that wasn't found, just return the title... crappy input
     if "%y" in movie_fs and not year or "%q" in movie_fs and not quality:
         return title
-    
+
     for i in range(len(movidx)):
-        final  += movie_fs[index:movidx[i]]        
+        final  += movie_fs[index:movidx[i]]
         index   = movidx[i]+1
         fstemp  = movie_fs[index:]
         index  += 1
@@ -222,7 +222,7 @@ def populate_fields(filename):
     """ Parses the filename and populates the fields needed for renaming """
     global fmonth, smonth, zmonth, month, day, zday, year, quality, season, \
            zseason, episode, zepisode, title, type, extension, special
-    
+
     # Get & Check extension first to speed up processing
     filename  = filename.lower()
     extension = filename[filename.rfind('.')+1:]
@@ -232,46 +232,46 @@ def populate_fields(filename):
     hyph = string.find(filename, '-')
     if hyph < 10:
         filename = filename[hyph + 1:]
-    
+
     # Initialize fields and split the filename by space, underscore, period, hyphen
     fmonth=smonth=zmonth=month=day=zday=year=quality=season=zseason=episode=zepisode=None
     title, special = [], []
     type  = "tv"
-    elems = re.split('[ _.-]', filename) 
-    
+    elems = re.split('[ _.-]', filename)
+
     # parse each filename element except the extension
     for elem in elems[0:-1]:
         # Check that the element is long enough to contain episode & season info
         if len(elem) > 2:
-            
+
             # sanitize show.[*].* and show.(*).*
-            if elem[0] == '[': 
+            if elem[0] == '[':
                 closeindex = string.rfind(elem, ']')
                 elem       = elem[1:closeindex if closeindex != -1 else len(elem)]
             elif elem[0] == '(':
                 closeindex = string.rfind(elem, ')')
                 elem       = elem[1:closeindex if closeindex != -1 else len(elem)]
-                
+
             # show.s01e01.* / show.s01e01e02.* TODO: Fix multiepisode w/ non-def fs here
             if elem[0] == 's' and elem[1].isdigit():
                 temp     = elem[1:].split('e')
                 zseason  = temp[0]
                 zepisode = temp[1] if len(temp) == 2 else 'E'.join(temp[1:3])
                 break
-            
+
             # show.1x01.*
-            if elem[1] == 'x':  
+            if elem[1] == 'x':
                 zseason  = "0" + elem[0]
                 zepisode = elem[2:4]
                 break
-            
+
             # show.01x01.*
             if elem[2] == 'x' and elem[3].isdigit():
                 zseason  = elem[0:2]
                 zepisode = elem[3:5]
-                break            
+                break
 
-            # Order of the above parse attempts does not matter, but those below do            
+            # Order of the above parse attempts does not matter, but those below do
             # prevent title from elongating when no year/seas/ep found - assume movie
             if elem in quality_attributes:
                 quality = elem
@@ -284,19 +284,19 @@ def populate_fields(filename):
                 zseason = ""        # (Probably) no season for this file
                 elem    = elems[i]  # The new current element in the array
                 year    = elems[i-1]
-                
+
                 # show.2009.s01e01.* break to format normal show
                 if elem[0] == 's':
                     temp     = elem[1:].split('e')
                     zseason  = temp[0]
                     zepisode = temp[1] if len(temp) == 2 else 'E'.join(temp[1:3])
                     break
-                
+
                 # Movie without quality attributes
                 if len(elems) == i + 1:
                     type = "movie"
                     return True
-                
+
                 # Get special attributes (e.g. multi, bluray, extended cut) and quality
                 # also try to match movie based on movie.title.year.quality.* or
                 #                         movie.title.year.something.here.quality.*
@@ -310,7 +310,7 @@ def populate_fields(filename):
                         break
                     if not elems[j].isdigit() and elems[j] not in file_cleanup_queue:
                         special.append(elems[j])
-                
+
                 # show named using a date, assume show.year.month.day format
                 zmonth = str(int(elem)-1)
                 month  = zmonth[-1] if zmonth[0] == '0' else zmonth
@@ -319,7 +319,7 @@ def populate_fields(filename):
                 zday   = elems[i+1]
                 day    = zday[-1] if zday[0] == '0' else zday
                 return True
-            
+
             # show.0101.* / show.101.*
             if elem.isdigit():
                 if len(elem) == 4:
@@ -333,7 +333,7 @@ def populate_fields(filename):
         # Determined this element to be part of the title so add it
         if elem not in file_cleanup_queue:
             title.append(elem)
-        
+
     # All above breaks lead here when a show with season and episode is detected
     if zseason and zepisode:
         season  = zseason[-1]  if zseason[0]  == '0' else zseason
@@ -390,7 +390,7 @@ def titler(title):
             result += string.upper(title[0][0])
             result += title[0][1:]
             result += " "
-        
+
     for word in title[1:]:
         if word in SMALL:
             result += word
@@ -401,8 +401,8 @@ def titler(title):
             result += string.upper(word[0])
             result += word[1:]
             result += " "
-    return result[:-1]        
-            
+    return result[:-1]
+
 # Get the indices of the % in each format string for replacement
 dateidx = index_fs(dated_fs)
 tvidx   = index_fs(undated_fs)
@@ -423,20 +423,20 @@ for root, dirs, files in os.walk(sourcedir):
 
                 if root != sourcedir or remove_src:
                     dir_cleanup_queue.add(root)
-                    
+
                 new_path = os.path.join(moviedest, format_movie()) if type == "movie" \
                       else os.path.join(tvdest, format_show() if episode else format_dated_show())
                 new_path += '.' + extension
-                      
+
                 rename(old_path, new_path)
-                
+
         except WindowsError as e:
             show("Windows Error:", e.strerror)
             print(e)
         except Exception as e:
             show("*FAILED TO PROCESS*:", old_filename)
             print(e)
-            
+
 # Cleanup / handle satellites, then remove directories that are now empty
 if cleanup or satellites:
     for q in file_cleanup_queue:
@@ -449,5 +449,5 @@ if cleanup or satellites:
             cleanup_safe()
         elif clean_mode == 2:
             cleanup_brute()
-            
+
 if stay_open: raw_input("\nFiles processed successfully, press Enter to exit.")
