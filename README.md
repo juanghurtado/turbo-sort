@@ -1,5 +1,7 @@
 # Turbo Sort
 
+(This repo is just a mirror to preserve it from the closing of Google Code. Original repo found in: https://code.google.com/p/turbo-sort/. Greetings to the authors of the script.)
+
 This is a very fast parsing script for downloaded TV shows and movies. It will use scene-standard naming conventions (and a lot of nonstandard ones, too) to match TV shows and movies and rename / move them as you like.
 
 My script now supports format strings similar to SABnzbd! It should also work on all platforms that have a Python interpreter available.
